@@ -4,13 +4,13 @@ package com.akka.consistenthash.core;/*
 
 import com.akka.consistenthash.container.ConsistentHashArrayRing;
 import com.akka.consistenthash.exception.VirtualNodeException;
-import com.akka.consistenthash.hash.AbstractHashRing;
+import com.akka.consistenthash.hash.HashFunction;
+import com.akka.consistenthash.hash.HashRing;
 import com.akka.consistenthash.hash.Node;
 
-import java.util.Collection;
 import java.util.List;
 
-public class FixedLengthHashRing extends AbstractHashRing {
+public class FixedLengthHashRing implements HashRing {
 
     private ConsistentHashArrayRing hashRing;
 
@@ -20,21 +20,23 @@ public class FixedLengthHashRing extends AbstractHashRing {
 
     private int virtualNodeSize;
 
+    private HashFunction hashFunction;
     private FixedLengthHashRing() {
     }
 
-    public FixedLengthHashRing(List<Node> nodes, int virtualNodeSize) {
+    public FixedLengthHashRing(List<Node> nodes, int virtualNodeSize, HashFunction hashFunction) {
         this.nodes = nodes;
         this.virtualNodeSize = virtualNodeSize;
+        this.hashFunction = hashFunction;
     }
 
 
     private FixedLengthHashRing create() {
         this.step = Integer.MAX_VALUE / virtualNodeSize;
         this.hashRing = new ConsistentHashArrayRing(step);
-        for (int i = 1; i <= virtualNodeSize; i++) {
+        for (int i = 0; i < virtualNodeSize; i++) {
             final Node node = nodes.get(i % nodes.size());
-            final Node.VirtualNode virtualNode = node.createVirtualNode(step);
+            final Node.VirtualNode virtualNode = node.createVirtualNode(step * (i + 1));
             hashRing.add(virtualNode);
         }
         return this;
@@ -46,23 +48,38 @@ public class FixedLengthHashRing extends AbstractHashRing {
         }
     }
 
+    @Override
+    public Node.VirtualNode get(String key) {
+        return hashRing.get(hashFunction.hash(key));
+    }
+
 
     public static class Builder {
         private List<Node> nodes;
 
+        private HashFunction hashFunction;
         private int virtualNodeSize;
 
-        public void setNodes(List<Node> nodes) {
+        public Builder setNodes(List<Node> nodes) {
             this.nodes = nodes;
+            return this;
         }
 
-        public void virtualNodeSize(int virtualNodeSize) {
+        public Builder hashFunction(HashFunction hashFunction) {
+            this.hashFunction = hashFunction;
+            return this;
+        }
+
+        public Builder virtualNodeSize(int virtualNodeSize) {
             this.virtualNodeSize = virtualNodeSize;
+            return this;
         }
 
         public FixedLengthHashRing create() {
-            return new FixedLengthHashRing(nodes, virtualNodeSize).create();
+            return new FixedLengthHashRing(nodes, virtualNodeSize, hashFunction).create();
         }
+
+
     }
 
 

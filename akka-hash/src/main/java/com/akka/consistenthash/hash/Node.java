@@ -8,13 +8,9 @@ public class Node {
 
     private final String dbSignboard;
 
-    private final int virtualNodeSize;
-
-
-    public Node(String dbAddress, String dbSignboard, int virtualNodeSize) {
+    public Node(String dbAddress, String dbSignboard) {
         this.dbAddress = dbAddress;
         this.dbSignboard = dbSignboard;
-        this.virtualNodeSize = virtualNodeSize;
     }
 
 
@@ -24,10 +20,6 @@ public class Node {
 
     public String getDbSignboard() {
         return dbSignboard;
-    }
-
-    public int getVirtualNodeSize() {
-        return virtualNodeSize;
     }
 
 

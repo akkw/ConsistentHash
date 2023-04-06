@@ -17,7 +17,7 @@ public class ConsistentHashArrayRingTest {
 
     @Before
     public void before() {
-        final Node node = new Node("127.0.0.1", "test", virtualNodeSize);
+        final Node node = new Node("127.0.0.1", "test");
         for (int i = 1; i <= virtualNodeSize; i ++) {
            consistentHashArrayRing.add(node.createVirtualNode(i * step));
        }
