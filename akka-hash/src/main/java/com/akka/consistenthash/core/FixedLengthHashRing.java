@@ -38,7 +38,8 @@ public class FixedLengthHashRing implements HashRing {
         this.hashRing = new ConsistentHashArrayRing(step);
         for (int i = 0; i < virtualNodeSize; i++) {
             final Node node = nodes.get(i % nodes.size());
-            final Node.VirtualNode virtualNode = node.createVirtualNode(step * (i + 1));
+            final int location = i == virtualNodeSize - 1 ?  MAXIMUM_CAPACITY : step * (i + 1);
+            final Node.VirtualNode virtualNode = node.createVirtualNode(location);
             hashRing.add(virtualNode);
         }
         return this;
