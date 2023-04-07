@@ -10,8 +10,9 @@ import com.akka.consistenthash.hash.Node;
 
 import java.util.List;
 
+import static com.akka.consistenthash.container.ConsistentHashArrayRing.MAXIMUM_CAPACITY;
+
 public class FixedLengthHashRing implements HashRing {
-    private static final int MAXIMUM_CAPACITY = 1 << 30;
     private ConsistentHashArrayRing hashRing;
 
     private int step;
@@ -32,7 +33,7 @@ public class FixedLengthHashRing implements HashRing {
 
 
     private FixedLengthHashRing create() {
-        virtualNodeSize = tableSizeFor(virtualNodeSize);
+//        virtualNodeSize = tableSizeFor(virtualNodeSize);
         this.step = MAXIMUM_CAPACITY / virtualNodeSize;
         this.hashRing = new ConsistentHashArrayRing(step);
         for (int i = 0; i < virtualNodeSize; i++) {

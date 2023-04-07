@@ -12,7 +12,7 @@ import static org.junit.Assert.*;
  */
 public class ConsistentHashArrayRingTest {
     int virtualNodeSize = 4;
-    final int step = Integer.MAX_VALUE / virtualNodeSize;
+    final int step = ConsistentHashArrayRing.MAXIMUM_CAPACITY / virtualNodeSize;
     ConsistentHashArrayRing consistentHashArrayRing = new ConsistentHashArrayRing(step);
 
     @Before
@@ -22,6 +22,7 @@ public class ConsistentHashArrayRingTest {
            consistentHashArrayRing.add(node.createVirtualNode(i * step));
        }
     }
+
 
 
 
@@ -40,7 +41,7 @@ public class ConsistentHashArrayRingTest {
         final Node.VirtualNode virtualNode3 = consistentHashArrayRing.get(index3);
         Assert.assertEquals( step * 3, virtualNode3.getLocation());
 
-        final int index4 = Integer.MAX_VALUE - 3;
+        final int index4 = ConsistentHashArrayRing.MAXIMUM_CAPACITY - 3;
         final Node.VirtualNode virtualNode4 = consistentHashArrayRing.get(index4);
         Assert.assertEquals(step * 4, virtualNode4.getLocation());
 
