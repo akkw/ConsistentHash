@@ -23,10 +23,12 @@ public class FixedLengthHashRingTest {
 
     @Test
     public void modTest() {
-        for (int i = 0; i < ConsistentHashArrayRing.MAXIMUM_CAPACITY +1 ; i++) {
-            System.out.println(ConsistentHashArrayRing.MAXIMUM_CAPACITY % tableSizeFor(i));;
+        for (int i = 0; i < ConsistentHashArrayRing.MAXIMUM_CAPACITY + 1; i++) {
+            System.out.println(ConsistentHashArrayRing.MAXIMUM_CAPACITY % tableSizeFor(i));
+            ;
         }
     }
+
     @Test
     public void test() {
         List<Node> virtualNodes = new ArrayList<>();
@@ -87,7 +89,7 @@ public class FixedLengthHashRingTest {
             byte[] bKey = instance.digest();
             int h = 0;
             for (int i = 0; i < 4; i ++) {
-                h |= (bKey[i] & 0xFF) << i *8 ;
+                h |= (bKey[i] & 0xFF) << i * 8;
             }
             return h & (0xFFFFFF << 7 | 0b1111110);
         }
