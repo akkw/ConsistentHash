@@ -20,7 +20,7 @@ public class ConsistentHashArrayRing extends ArrayList<Node.VirtualNode> {
         return binarySearch(index);
     }
     private Node.VirtualNode binarySearch(int index) {
-        // (n,m] close left and open right
+        // [n,m]
         int location = index / (step + 1);
         return super.get(location >= size() ? location - 1 : location);
     }

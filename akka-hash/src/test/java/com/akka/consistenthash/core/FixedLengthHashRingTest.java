@@ -4,6 +4,7 @@ import com.akka.consistenthash.hash.HashFunction;
 import com.akka.consistenthash.hash.Node;
 import org.junit.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -24,15 +25,27 @@ public class FixedLengthHashRingTest {
         virtualNodes.add(new Node("127.0.0.2", "db2"));
         virtualNodes.add(new Node("127.0.0.3", "db3"));
         virtualNodes.add(new Node("127.0.0.4", "db4"));
+        virtualNodes.add(new Node("127.0.0.5", "db5"));
+        virtualNodes.add(new Node("127.0.0.6", "db6"));
+        virtualNodes.add(new Node("127.0.0.7", "db7"));
+        virtualNodes.add(new Node("127.0.0.8", "db8"));
+        virtualNodes.add(new Node("127.0.0.9", "db9"));
+        virtualNodes.add(new Node("127.0.0.10", "db10"));
+        virtualNodes.add(new Node("127.0.0.11", "db11"));
+        virtualNodes.add(new Node("127.0.0.12", "db12"));
+        virtualNodes.add(new Node("127.0.0.13", "db13"));
+        virtualNodes.add(new Node("127.0.0.14", "db14"));
+        virtualNodes.add(new Node("127.0.0.15", "db15"));
+        virtualNodes.add(new Node("127.0.0.16", "db16"));
         final FixedLengthHashRing.Builder builder = new FixedLengthHashRing.Builder();
         builder.setNodes(virtualNodes)
                 .hashFunction(new MD5Hash())
-                .virtualNodeSize(12);
+                .virtualNodeSize(2048 << 5);
 
         final FixedLengthHashRing fixedLengthHashRing = builder.create();
 
         Map<String, AtomicInteger> map = new HashMap<>();
-        int size = 10000;
+        int size = 1000000;
         for (int i = 0; i < size; i++) {
             record(fixedLengthHashRing.get(UUID.randomUUID().toString()).getDbSignboard(), map);
         }
@@ -60,9 +73,14 @@ public class FixedLengthHashRingTest {
 
         @Override
         public int hash(String key) {
-
-
-            return key.hashCode();
+            instance.reset();
+            instance.update(key.getBytes(StandardCharsets.UTF_8));
+            byte[] bKey = instance.digest();
+            int h = 0;
+            for (int i = 0; i < 3; i ++) {
+                h |= (bKey[i] & 0xFF) << i *8 ;
+            }
+            return h & (0xFFFFFF << 6 | 0b111111);
         }
     }
 }
