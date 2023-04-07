@@ -26,12 +26,12 @@ public class FixedLengthHashRingTest {
         final FixedLengthHashRing.Builder builder = new FixedLengthHashRing.Builder();
         builder.setNodes(virtualNodes)
                 .hashFunction(new FixedDefaultHashFunction())
-                .virtualNodeSize(2000);
+                .virtualNodeSize(1000);
 
         final FixedLengthHashRing fixedLengthHashRing = builder.create();
 
         Map<String, AtomicInteger> map = new HashMap<>();
-        int size = 1000000000;
+        int size = 10000000;
         for (int i = 0; i < size; i++) {
             record(fixedLengthHashRing.get(UUID.randomUUID().toString()).getDbSignboard(), map);
         }

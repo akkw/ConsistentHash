@@ -11,11 +11,12 @@
 + FixedCacheHashRing（开发中）
 + DynamicalCacheHashRing（开发中）
 
+## FixedHashRing
 FixedLengthHashRing是一种在初始化阶段即确定节点在Hash环的分布状态，使得所有的虚拟节点在Hash环上均匀的分布。
 
 ![img.png](docs/imgs/img.png)
 
-## FixedHashRing
+
 在这个hash环上均匀的分布着8个区域，每个区域的步长为268435455，通过对每个虚拟节点公平的范围分配，使得我们的数据能够均匀的分布在每个服务器节点上。这种方式的缺点是没办法进行动态扩所容，优点是数据分布非常均衡。
 
 #### 测试数据
