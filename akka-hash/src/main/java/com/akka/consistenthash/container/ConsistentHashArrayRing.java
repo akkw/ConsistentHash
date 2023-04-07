@@ -2,7 +2,7 @@ package com.akka.consistenthash.container;/*
     create qiangzhiwei time 2023/4/5
  */
 
-import com.akka.consistenthash.hash.Node;
+import com.akka.consistenthash.core.Node;
 
 import java.util.ArrayList;
 

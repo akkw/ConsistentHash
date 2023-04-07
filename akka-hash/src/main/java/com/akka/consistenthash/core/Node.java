@@ -1,4 +1,4 @@
-package com.akka.consistenthash.hash;/* 
+package com.akka.consistenthash.core;/*
     create qiangzhiwei time 2023/4/5
  */
 
@@ -32,12 +32,12 @@ public class Node {
 
         private final String dbSignboard;
 
-        private final int location;
+        private final int scope;
 
-        public VirtualNode(String dbAddress, String dbSignboard, int location) {
+        public VirtualNode(String dbAddress, String dbSignboard, int scope) {
             this.dbAddress = dbAddress;
             this.dbSignboard = dbSignboard;
-            this.location = location;
+            this.scope = scope;
         }
 
         public String getDbAddress() {
@@ -48,8 +48,8 @@ public class Node {
             return dbSignboard;
         }
 
-        public int getLocation() {
-            return location;
+        public int getScope() {
+            return scope;
         }
 
         @Override
@@ -57,7 +57,7 @@ public class Node {
             return "VirtualNode{" +
                     "dbAddress='" + dbAddress + '\'' +
                     ", dbSignboard='" + dbSignboard + '\'' +
-                    ", location=" + location +
+                    ", location=" + scope +
                     '}';
         }
     }

@@ -6,7 +6,6 @@ import com.akka.consistenthash.container.ConsistentHashArrayRing;
 import com.akka.consistenthash.exception.VirtualNodeException;
 import com.akka.consistenthash.hash.HashFunction;
 import com.akka.consistenthash.hash.HashRing;
-import com.akka.consistenthash.hash.Node;
 
 import java.util.List;
 
@@ -32,8 +31,9 @@ public class FixedLengthHashRing implements HashRing {
     }
 
 
-    private FixedLengthHashRing create() {
-//        virtualNodeSize = tableSizeFor(virtualNodeSize);
+    private FixedLengthHashRing create() throws VirtualNodeException {
+        check();
+
         this.step = MAXIMUM_CAPACITY / virtualNodeSize;
         this.hashRing = new ConsistentHashArrayRing(step);
         for (int i = 0; i < virtualNodeSize; i++) {
@@ -77,21 +77,10 @@ public class FixedLengthHashRing implements HashRing {
             return this;
         }
 
-        public FixedLengthHashRing create() {
+        public FixedLengthHashRing create() throws VirtualNodeException {
             return new FixedLengthHashRing(nodes, virtualNodeSize, hashFunction).create();
         }
 
 
     }
-
-    static int tableSizeFor(int cap) {
-        int n = cap - 1;
-        n |= n >>> 1;
-        n |= n >>> 2;
-        n |= n >>> 4;
-        n |= n >>> 8;
-        n |= n >>> 16;
-        return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
-    }
-
 }

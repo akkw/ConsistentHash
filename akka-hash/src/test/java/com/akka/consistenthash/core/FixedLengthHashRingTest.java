@@ -1,19 +1,11 @@
 package com.akka.consistenthash.core;
 
-import com.akka.consistenthash.container.ConsistentHashArrayRing;
-import com.akka.consistenthash.hash.HashFunction;
-import com.akka.consistenthash.hash.Node;
-import org.junit.Assert;
+import com.akka.consistenthash.exception.VirtualNodeException;
+import com.akka.consistenthash.hash.FixedDefaultHashFunction;
 import org.junit.Test;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static com.akka.consistenthash.core.FixedLengthHashRing.tableSizeFor;
-import static org.junit.Assert.*;
 
 /*
     create qiangzhiwei time 2023/4/6
@@ -22,15 +14,7 @@ import static org.junit.Assert.*;
 public class FixedLengthHashRingTest {
 
     @Test
-    public void modTest() {
-        for (int i = 0; i < ConsistentHashArrayRing.MAXIMUM_CAPACITY + 1; i++) {
-            System.out.println(ConsistentHashArrayRing.MAXIMUM_CAPACITY % tableSizeFor(i));
-            ;
-        }
-    }
-
-    @Test
-    public void test() {
+    public void test() throws VirtualNodeException {
         List<Node> virtualNodes = new ArrayList<>();
         virtualNodes.add(new Node("127.0.0.1", "db1"));
         virtualNodes.add(new Node("127.0.0.2", "db2"));
@@ -43,15 +27,15 @@ public class FixedLengthHashRingTest {
         virtualNodes.add(new Node("127.0.0.9", "db9"));
         virtualNodes.add(new Node("127.0.0.10", "db10"));
         virtualNodes.add(new Node("127.0.0.11", "db11"));
-//        virtualNodes.add(new Node("127.0.0.12", "db12"));
-//        virtualNodes.add(new Node("127.0.0.13", "db13"));
-//        virtualNodes.add(new Node("127.0.0.14", "db14"));
-//        virtualNodes.add(new Node("127.0.0.15", "db15"));
-//        virtualNodes.add(new Node("127.0.0.16", "db16"));
+        virtualNodes.add(new Node("127.0.0.12", "db12"));
+        virtualNodes.add(new Node("127.0.0.13", "db13"));
+        virtualNodes.add(new Node("127.0.0.14", "db14"));
+        virtualNodes.add(new Node("127.0.0.15", "db15"));
+        virtualNodes.add(new Node("127.0.0.16", "db16"));
         final FixedLengthHashRing.Builder builder = new FixedLengthHashRing.Builder();
         builder.setNodes(virtualNodes)
-                .hashFunction(new MD5Hash())
-                .virtualNodeSize(11);
+                .hashFunction(new FixedDefaultHashFunction())
+                .virtualNodeSize(5000);
 
         final FixedLengthHashRing fixedLengthHashRing = builder.create();
 
@@ -70,28 +54,5 @@ public class FixedLengthHashRingTest {
             counter.put(db, new AtomicInteger());
         }
         counter.get(db).getAndIncrement();
-    }
-
-    private static class MD5Hash implements HashFunction {
-        MessageDigest instance;
-
-        public MD5Hash() {
-            try {
-                instance = MessageDigest.getInstance("MD5");
-            } catch (NoSuchAlgorithmException e) {
-            }
-        }
-
-        @Override
-        public int hash(String key) {
-            instance.reset();
-            instance.update(key.getBytes(StandardCharsets.UTF_8));
-            byte[] bKey = instance.digest();
-            int h = 0;
-            for (int i = 0; i < 4; i ++) {
-                h |= (bKey[i] & 0xFF) << i * 8;
-            }
-            return h & (0xFFFFFF << 7 | 0b1111110);
-        }
     }
 }
