@@ -40,6 +40,7 @@ public class FixedLengthHashRing implements HashRing {
             final Node node = nodes.get(i % nodes.size());
             final int location = i == virtualNodeSize - 1 ?  MAXIMUM_CAPACITY : step * (i + 1);
             final Node.VirtualNode virtualNode = node.createVirtualNode(location);
+            node.addVirtualNodeRecode(virtualNode);
             hashRing.add(virtualNode);
         }
         return this;
