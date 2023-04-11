@@ -6,9 +6,7 @@ import com.akka.consistenthash.hash.HashFunction;
 import com.akka.consistenthash.hash.HashRing;
 
 import javax.swing.text.html.ListView;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 public class DefaultDynamicalHashRing implements HashRing, DynamicalHashRing {
@@ -18,7 +16,7 @@ public class DefaultDynamicalHashRing implements HashRing, DynamicalHashRing {
     private HashFunction hashFunction;
     private int virtualNodeSize;
 
-    private final ConcurrentSkipListMap<String, Node.VirtualNode> virtualNodeSkipList = new ConcurrentSkipListMap<>();
+    private final ConcurrentSkipListMap<Integer, Node.VirtualNode> virtualNodeSkipList = new ConcurrentSkipListMap<>();
 
     private VirtualNodeArrange virtualNodeArrange = VirtualNodeArrange.SEQUENTIAL;
 
@@ -34,31 +32,41 @@ public class DefaultDynamicalHashRing implements HashRing, DynamicalHashRing {
     }
 
     private DefaultDynamicalHashRing create() {
-        List<Node> nodesView = nodes.subList(0, nodes.size());
-        return null;
+        for (Node node : nodes) {
+            addToVirtualNode(node);
+        }
+        return this;
+    }
+
+    private void addToVirtualNode(Node node) {
+        final String dbSignboard = node.getDbSignboard();
+        for (int i = 0; i < virtualNodeSize; i++) {
+            final int hash = hashFunction.hash(dbSignboard + i);
+            Node.VirtualNode virtualNode = node.createVirtualNode(hash);
+            node.addVirtualNodeRecode(virtualNode);
+            virtualNodeSkipList.put(virtualNode.getScope(), virtualNode);
+        }
     }
     @Override
     public Node.VirtualNode get(String key) {
-        return null;
+        return virtualNodeSkipList.lowerEntry(hashFunction.hash(key)).getValue();
     }
 
     @Override
-    public void addNode(Node node, long location) {
-
+    public void addNode(Node node) {
+        if (node != null) {
+            nodes.add(node);
+            addToVirtualNode(node);
+        }
     }
 
     @Override
     public void removeNode(Node node) {
-
-    }
-
-    public static void main(String[] args) {
-        List<String> strings = new ArrayList<>();
-        strings.add("1");
-        ListIterator<String> stringListIterator = strings.listIterator();
-        stringListIterator.next();
-        stringListIterator.remove();
-        System.out.println(strings.size());
+        final Map<String, List<Node.VirtualNode>> virtualNodeRecode = node.getVirtualNodeRecode();
+        final Collection<List<Node.VirtualNode>> virtualNodes = virtualNodeRecode.values();
+        for (Node.VirtualNode virtualNode : virtualNodes) {
+            virtualNodeSkipList.remove(key);
+        }
     }
 
     public static class Builder {

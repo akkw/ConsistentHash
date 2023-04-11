@@ -4,7 +4,7 @@ import com.akka.consistenthash.core.Node;
 
 public interface DynamicalHashRing {
 
-    void addNode(Node node, long location);
+    void addNode(Node node);
 
     void removeNode(Node node);
 }

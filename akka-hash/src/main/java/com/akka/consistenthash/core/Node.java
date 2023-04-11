@@ -36,6 +36,9 @@ public class Node {
         return dbSignboard;
     }
 
+    public Map<String, List<VirtualNode>> getVirtualNodeRecode() {
+        return virtualNodeRecode;
+    }
 
     public VirtualNode createVirtualNode(int location) {
         return new VirtualNode(dbAddress, dbSignboard, location);
