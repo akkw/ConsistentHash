@@ -3,66 +3,81 @@ package com.akka.consistenthash.core;/*
  */
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Node {
 
-    private final String dbAddress;
+    private final String address;
 
-    private final String dbSignboard;
+    private final String nodeSignboard;
 
-    private final Map<String, List<VirtualNode>> virtualNodeRecode = new HashMap<>();
+    private final List<VirtualNode> virtualNodeRecode = new ArrayList<>();
 
-    public Node(String dbAddress, String dbSignboard) {
-        this.dbAddress = dbAddress;
-        this.dbSignboard = dbSignboard;
+    public Node(String address, String nodeSignboard) {
+        this.address = address;
+        this.nodeSignboard = nodeSignboard;
     }
 
 
     public void addVirtualNodeRecode(VirtualNode virtualNode) {
-       if (!this.virtualNodeRecode.containsKey(virtualNode.getDbSignboard())) {
-           this.virtualNodeRecode.put(virtualNode.dbSignboard, new ArrayList<>());
-       }
-       this.virtualNodeRecode.get(virtualNode.getDbSignboard()).add(virtualNode);
+        this.virtualNodeRecode.add(virtualNode);
     }
 
-    public String getDbAddress() {
-        return dbAddress;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Node node = (Node) o;
+
+        if (!address.equals(node.address)) return false;
+        return nodeSignboard.equals(node.nodeSignboard);
     }
 
-    public String getDbSignboard() {
-        return dbSignboard;
+    @Override
+    public int hashCode() {
+        int result = address.hashCode();
+        result = 31 * result + nodeSignboard.hashCode();
+        return result;
     }
 
-    public Map<String, List<VirtualNode>> getVirtualNodeRecode() {
+    public String getAddress() {
+        return address;
+    }
+
+    public String getNodeSignboard() {
+        return nodeSignboard;
+    }
+
+    public List<VirtualNode> getVirtualNodeRecode() {
         return virtualNodeRecode;
     }
 
-    public VirtualNode createVirtualNode(int location) {
-        return new VirtualNode(dbAddress, dbSignboard, location);
+    public VirtualNode createVirtualNode(int space) {
+        VirtualNode virtualNode = new VirtualNode(address, nodeSignboard, space);
+        addVirtualNodeRecode(virtualNode);
+        return virtualNode;
     }
 
     public static class VirtualNode {
-        private final String dbAddress;
+        private final String address;
 
-        private final String dbSignboard;
+        private final String nodeSignboard;
 
         private final int scope;
 
-        private VirtualNode(String dbAddress, String dbSignboard, int scope) {
-            this.dbAddress = dbAddress;
-            this.dbSignboard = dbSignboard;
+        private VirtualNode(String address, String nodeSignboard, int scope) {
+            this.address = address;
+            this.nodeSignboard = nodeSignboard;
             this.scope = scope;
         }
 
-        public String getDbAddress() {
-            return dbAddress;
+        public String getAddress() {
+            return address;
         }
 
-        public String getDbSignboard() {
-            return dbSignboard;
+        public String getNodeSignboard() {
+            return nodeSignboard;
         }
 
         public int getScope() {
@@ -72,13 +87,12 @@ public class Node {
         @Override
         public String toString() {
             return "VirtualNode{" +
-                    "dbAddress='" + dbAddress + '\'' +
-                    ", dbSignboard='" + dbSignboard + '\'' +
+                    "dbAddress='" + address + '\'' +
+                    ", dbSignboard='" + nodeSignboard + '\'' +
                     ", location=" + scope +
                     '}';
         }
     }
 
 
-    
 }

@@ -1,71 +1,128 @@
 package com.akka.consistenthash.core;
 
-import com.akka.consistenthash.exception.VirtualNodeException;
+import com.akka.consistenthash.exception.NodeException;
 import com.akka.consistenthash.hash.DynamicalHashRing;
 import com.akka.consistenthash.hash.HashFunction;
 import com.akka.consistenthash.hash.HashRing;
+import org.apache.commons.lang3.StringUtils;
 
-import javax.swing.text.html.ListView;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class DefaultDynamicalHashRing implements HashRing, DynamicalHashRing {
 
     private List<Node> nodes;
-
     private HashFunction hashFunction;
-    private int virtualNodeSize;
+    private int virtualNodeEverySize;
 
-    private final ConcurrentSkipListMap<Integer, Node.VirtualNode> virtualNodeSkipList = new ConcurrentSkipListMap<>();
-
-    private VirtualNodeArrange virtualNodeArrange = VirtualNodeArrange.SEQUENTIAL;
+    private volatile ConcurrentSkipListMap<Integer, Node.VirtualNode> virtualNodeSkipList = new ConcurrentSkipListMap<>();
 
     private DefaultDynamicalHashRing() {
     }
 
-    private DefaultDynamicalHashRing(List<Node> nodes, HashFunction hashFunction, int virtualNodeSize,
-                                     VirtualNodeArrange virtualNodeArrange) {
+    private DefaultDynamicalHashRing(List<Node> nodes, HashFunction hashFunction, int virtualNodeEverySize) {
         this.nodes = nodes;
         this.hashFunction = hashFunction;
-        this.virtualNodeArrange = virtualNodeArrange;
-        this.virtualNodeSize = virtualNodeSize;
+        this.virtualNodeEverySize = virtualNodeEverySize;
     }
 
-    private DefaultDynamicalHashRing create() {
+    private DefaultDynamicalHashRing create() throws NodeException {
+        check();
+
         for (Node node : nodes) {
-            addToVirtualNode(node);
+            for (int i = 0; i < virtualNodeEverySize; i++) {
+                Node.VirtualNode virtualNode = node.createVirtualNode(hashFunction.hash(node.getNodeSignboard() + i));
+                addToConsistentHashRing(virtualNode);
+            }
         }
+
         return this;
     }
 
-    private void addToVirtualNode(Node node) {
-        final String dbSignboard = node.getDbSignboard();
-        for (int i = 0; i < virtualNodeSize; i++) {
-            final int hash = hashFunction.hash(dbSignboard + i);
-            Node.VirtualNode virtualNode = node.createVirtualNode(hash);
-            node.addVirtualNodeRecode(virtualNode);
-            virtualNodeSkipList.put(virtualNode.getScope(), virtualNode);
-        }
+    private void addToConsistentHashRing(Node.VirtualNode virtualNode) {
+        virtualNodeSkipList.put(virtualNode.getScope(), virtualNode);
     }
+
     @Override
     public Node.VirtualNode get(String key) {
-        return virtualNodeSkipList.lowerEntry(hashFunction.hash(key)).getValue();
+        Map.Entry<Integer, Node.VirtualNode> virtualNodeEntry = virtualNodeSkipList.higherEntry(hashFunction.hash(key));
+        return virtualNodeEntry == null ? virtualNodeSkipList.lastEntry().getValue() : virtualNodeEntry.getValue();
     }
 
     @Override
-    public void addNode(Node node) {
-        if (node != null) {
-            nodes.add(node);
-            addToVirtualNode(node);
+    public synchronized void addNode(Node node) throws NodeException {
+
+        ConcurrentSkipListMap<Integer, Node.VirtualNode> virtualNodeSkipListSnapshot =
+                new ConcurrentSkipListMap<>(virtualNodeSkipList);
+        addNodeTanglesome(node, virtualNodeSkipListSnapshot);
+        virtualNodeSkipList = virtualNodeSkipListSnapshot;
+    }
+
+    private void addNodeTanglesome(Node node, ConcurrentSkipListMap<Integer, Node.VirtualNode> virtualNodeSkipListSnapshot) {
+        for (int i = 0; i < virtualNodeEverySize; i++) {
+            int space = hashFunction.hash(node.getNodeSignboard() + i);
+            while (virtualNodeSkipListSnapshot.containsKey(space)) {
+                space = hashFunction.hash(node.getNodeSignboard() + new Random().nextInt(Integer.MAX_VALUE));
+            }
+            Node.VirtualNode virtualNode = node.createVirtualNode(space);
+            virtualNodeSkipListSnapshot.put(space, virtualNode);
+        }
+        nodes.add(node);
+    }
+
+    public synchronized void removeNode(String nodeSignboard) {
+        if (StringUtils.isBlank(nodeSignboard)) {
+            throw new IllegalArgumentException("the nodeSignboard cannot be null");
+        }
+
+        List<Node> removeNode = nodes.stream().filter((x) -> x.getNodeSignboard().equals(nodeSignboard))
+                .collect(Collectors.toList());
+        if (removeNode.size() == 0) {
+            return ;
+        }
+
+        Node node = removeNode.get(0);
+
+        ConcurrentSkipListMap<Integer, Node.VirtualNode> virtualNodeSkipListSnapshot =
+                new ConcurrentSkipListMap<>(virtualNodeSkipList);
+
+        removeNodeTanglesome(node, virtualNodeSkipListSnapshot);
+        virtualNodeSkipList = virtualNodeSkipListSnapshot;
+    }
+
+    private void removeNodeTanglesome(Node node, ConcurrentSkipListMap<Integer, Node.VirtualNode> virtualNodeSkipListSnapshot) {
+        List<Node.VirtualNode> virtualNodeRecode = node.getVirtualNodeRecode();
+
+        for (Node.VirtualNode virtualNode : virtualNodeRecode) {
+            virtualNodeSkipListSnapshot.remove(virtualNode.getScope());
         }
     }
 
-    @Override
-    public void removeNode(Node node) {
-        final Map<String, List<Node.VirtualNode>> virtualNodeRecode = node.getVirtualNodeRecode();
-        final Collection<List<Node.VirtualNode>> virtualNodes = virtualNodeRecode.values();
-        for (Node.VirtualNode virtualNode : virtualNodes) {
-            virtualNodeSkipList.remove(key);
+
+    private void check() throws NodeException {
+        if (nodes == null) {
+            throw new NodeException("the node list is empty");
+        }
+
+        if (virtualNodeEverySize <= 0) {
+            throw new NodeException("the number of virtual nodes is greater than 0");
+        }
+
+        for (Node node : nodes) {
+            check(node);
+        }
+    }
+
+    private void check(Node node) throws NodeException {
+        if (StringUtils.isBlank(node.getAddress())) {
+            throw new NodeException("node address is null exist");
+        }
+        if (StringUtils.isBlank(node.getNodeSignboard())) {
+            throw new NodeException("node signboard is null exist");
         }
     }
 
@@ -75,8 +132,8 @@ public class DefaultDynamicalHashRing implements HashRing, DynamicalHashRing {
         private HashFunction hashFunction;
         private int virtualNodeSize;
 
-        private VirtualNodeArrange virtualNodeArrange;
-        public DefaultDynamicalHashRing.Builder setNodes(List<Node> nodes) {
+
+        public DefaultDynamicalHashRing.Builder nodes(List<Node> nodes) {
             this.nodes = nodes;
             return this;
         }
@@ -91,13 +148,8 @@ public class DefaultDynamicalHashRing implements HashRing, DynamicalHashRing {
             return this;
         }
 
-        public Builder virtualNodeArrange(VirtualNodeArrange virtualNodeArrange) {
-            this.virtualNodeArrange = virtualNodeArrange;
-            return this;
-        }
-
-        public DefaultDynamicalHashRing create() throws VirtualNodeException {
-            return new DefaultDynamicalHashRing(nodes, hashFunction, virtualNodeSize, virtualNodeArrange).create();
+        public DefaultDynamicalHashRing create() throws NodeException {
+            return new DefaultDynamicalHashRing(nodes, hashFunction, virtualNodeSize).create();
         }
     }
 

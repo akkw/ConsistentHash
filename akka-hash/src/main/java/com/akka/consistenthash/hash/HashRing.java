@@ -5,5 +5,7 @@ package com.akka.consistenthash.hash;/*
 import com.akka.consistenthash.core.Node;
 
 public interface HashRing {
+    int MAXIMUM_CAPACITY = 0xFFFFFF << 7 | 0b1111110;
+
     Node.VirtualNode get(String key);
 }

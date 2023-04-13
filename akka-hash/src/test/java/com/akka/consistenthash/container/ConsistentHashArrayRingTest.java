@@ -5,12 +5,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import static com.akka.consistenthash.hash.HashRing.MAXIMUM_CAPACITY;
+
 /*
     create qiangzhiwei time 2023/4/5
  */
 public class ConsistentHashArrayRingTest {
     int virtualNodeSize = 4;
-    final int step = ConsistentHashArrayRing.MAXIMUM_CAPACITY / virtualNodeSize;
+    final int step = MAXIMUM_CAPACITY / virtualNodeSize;
     ConsistentHashArrayRing consistentHashArrayRing = new ConsistentHashArrayRing(step);
 
     @Before
@@ -39,7 +41,7 @@ public class ConsistentHashArrayRingTest {
         final Node.VirtualNode virtualNode3 = consistentHashArrayRing.get(index3);
         Assert.assertEquals( step * 3, virtualNode3.getScope());
 
-        final int index4 = ConsistentHashArrayRing.MAXIMUM_CAPACITY - 3;
+        final int index4 = MAXIMUM_CAPACITY - 3;
         final Node.VirtualNode virtualNode4 = consistentHashArrayRing.get(index4);
         Assert.assertEquals(step * 4, virtualNode4.getScope());
 
