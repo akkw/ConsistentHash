@@ -1,11 +1,11 @@
 package com.akkw.consistenthash.factory;
 
-import com.akkw.consistenthash.cache.store.ClientProxy;
+import com.akkw.consistenthash.cache.store.CacheClient;
 
 import java.util.List;
 
 public class ClientFactory {
-    List<ClientProxy<? extends  ClientProxy<?>>> getClientProxy() {
+    List<CacheClient> getClientProxy(Class<? extends CacheClient> type) {
         return null;
     }
 }
