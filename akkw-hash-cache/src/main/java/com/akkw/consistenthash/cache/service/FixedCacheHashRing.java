@@ -28,7 +28,7 @@ public class FixedCacheHashRing<R extends Model, W extends Model, T extends Cach
     private void init() throws Exception {
         FixedLengthHashRing.Builder<T> tBuilder = new FixedLengthHashRing.Builder<>();
         tBuilder.virtualNodeSize(virtualNodeSize);
-        tBuilder.hashFunction(getHashFunction());
+        tBuilder.hashFunction(hashFunction);
         tBuilder.setNodes(nodes);
         this.hashRing = tBuilder.create();
     }

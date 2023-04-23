@@ -1,8 +1,7 @@
 package com.akkw.consistenthash.cache.service;
 
-import com.akka.consistenthash.hash.FixedDefaultHashFunction;
 import com.akka.consistenthash.hash.HashFunction;
-import com.akkw.consistenthash.factory.HashFactory;
+import com.akka.consistenthash.factory.HashFactory;
 import com.akkw.consistenthash.factory.ProxyFactory;
 
 public abstract class AbstractHashRing {

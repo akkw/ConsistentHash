@@ -4,6 +4,7 @@ package com.akka.consistenthash.core;/*
 
 import com.akka.consistenthash.container.ConsistentHashArrayRing;
 import com.akka.consistenthash.exception.NodeException;
+import com.akka.consistenthash.factory.HashFactory;
 import com.akka.consistenthash.hash.HashFunction;
 import com.akka.consistenthash.hash.HashRing;
 import org.apache.commons.lang3.StringUtils;
@@ -20,15 +21,26 @@ public class FixedLengthHashRing<T> implements HashRing {
 
     private int virtualNodeTotalSize;
 
-    private HashFunction hashFunction;
+    private Class<? extends HashFunction> hashFunction;
 
+
+    private ThreadLocal<HashFunction> hashFunctionCache;
+
+    private final HashFactory hashFactory = new HashFactory();
     private FixedLengthHashRing() {
     }
 
-    public FixedLengthHashRing(List<Node<T>> nodes, int virtualNodeTotalSize, HashFunction hashFunction) {
+    public FixedLengthHashRing(List<Node<T>> nodes, int virtualNodeTotalSize, Class<? extends HashFunction> hashFunction) {
         this.nodes = nodes;
         this.virtualNodeTotalSize = virtualNodeTotalSize;
         this.hashFunction = hashFunction;
+        this.hashFunctionCache = ThreadLocal.withInitial(() -> {
+            try {
+                return hashFactory.getHashFunction(hashFunction);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
 
@@ -36,7 +48,7 @@ public class FixedLengthHashRing<T> implements HashRing {
         check();
 
         this.step = MAXIMUM_CAPACITY / virtualNodeTotalSize;
-        this.hashRing = new ConsistentHashArrayRing(step);
+        this.hashRing = new ConsistentHashArrayRing<>(step);
         for (int i = 0; i < virtualNodeTotalSize; i++) {
             final Node<T> node = nodes.get(i % nodes.size());
             final int location = i == virtualNodeTotalSize - 1 ? MAXIMUM_CAPACITY : step * (i + 1);
@@ -75,14 +87,14 @@ public class FixedLengthHashRing<T> implements HashRing {
 
     @Override
     public Node.VirtualNode<T> get(String key) {
-        return hashRing.get(hashFunction.hash(key));
+        return hashRing.get(hashFunctionCache.get().hash(key));
     }
 
 
     public static class Builder<T> {
         private List<Node<T>> nodes;
 
-        private HashFunction hashFunction;
+        private Class<? extends HashFunction> hashFunction;
         private int virtualNodeSize;
 
         public Builder<T> setNodes(List<Node<T>> nodes) {
@@ -90,7 +102,7 @@ public class FixedLengthHashRing<T> implements HashRing {
             return this;
         }
 
-        public Builder<T> hashFunction(HashFunction hashFunction) {
+        public Builder<T> hashFunction(Class<? extends HashFunction> hashFunction) {
             this.hashFunction = hashFunction;
             return this;
         }

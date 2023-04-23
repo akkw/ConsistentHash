@@ -1,4 +1,4 @@
-package com.akkw.consistenthash.factory;
+package com.akka.consistenthash.factory;
 
 import com.akka.consistenthash.hash.HashFunction;
 

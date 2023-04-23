@@ -24,7 +24,7 @@ public class FixedLengthHashRingTest extends HashRingTest{
 
         final FixedLengthHashRing.Builder builder = new FixedLengthHashRing.Builder();
         builder.setNodes(virtualNodes)
-                .hashFunction(new FixedDefaultHashFunction())
+                .hashFunction(FixedDefaultHashFunction.class)
                 .virtualNodeSize(1000);
 
         final FixedLengthHashRing fixedLengthHashRing = builder.create();
