@@ -3,7 +3,7 @@ package com.akkw.consistenthash.cache.service;
 
 import com.akka.consistenthash.core.Node;
 import com.akka.consistenthash.hash.FixedDefaultHashFunction;
-import com.akka.consistenthash.hash.HashFunction;
+import com.akkw.consistenthash.cache.store.CacheClient;
 import com.akkw.consistenthash.cache.store.CacheRW;
 import com.akkw.consistenthash.cache.store.Model;
 import com.akkw.consistenthash.cache.store.Operation;
@@ -56,7 +56,7 @@ public class FixedCacheHashRingTest {
     }
 
 
-    static class RedisClient implements CacheRW<Read, Write> {
+    static class RedisClient implements CacheClient<Read, Write> {
 
         MockJedisClient mockJedisClient = new MockJedisClient();
 
@@ -68,6 +68,16 @@ public class FixedCacheHashRingTest {
         @Override
         public void write(Write r) {
             mockJedisClient.set(r.toString(), r.getKey());
+        }
+
+        @Override
+        public void start() {
+
+        }
+
+        @Override
+        public void stop() {
+
         }
     }
 
