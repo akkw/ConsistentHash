@@ -1,6 +1,6 @@
 package com.akkw.consistenthash.cache.store;
 
-public interface CacheOperation<R, W> {
+public interface CacheRW<R, W> {
 
     Object read(R r);
 

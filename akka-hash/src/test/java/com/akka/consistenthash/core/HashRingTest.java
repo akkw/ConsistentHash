@@ -9,14 +9,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class HashRingTest {
     Map<String, AtomicInteger> counter = new HashMap<>();
     protected String path = System.getProperty("user.dir") + "/src/test/resources/";
-    protected List<Node> nodes = new ArrayList<>();
+    protected List<Node<String>> nodes = new ArrayList<>();
     public void before() {
-        nodes.add(new Node("127.0.0.1", "node0"));
-        nodes.add(new Node("127.0.0.2", "node1"));
-        nodes.add(new Node("127.0.0.3", "node2"));
-        nodes.add(new Node("127.0.0.4", "node3"));
-        nodes.add(new Node("127.0.0.5", "node4"));
-        nodes.add(new Node("127.0.0.6", "node5"));
+        nodes.add(new Node<>("127.0.0.1", "node0"));
+        nodes.add(new Node<>("127.0.0.2", "node1"));
+        nodes.add(new Node<>("127.0.0.3", "node2"));
+        nodes.add(new Node<>("127.0.0.4", "node3"));
+        nodes.add(new Node<>("127.0.0.5", "node4"));
+        nodes.add(new Node<>("127.0.0.6", "node5"));
     }
 
 

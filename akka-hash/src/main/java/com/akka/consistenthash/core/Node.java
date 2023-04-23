@@ -5,21 +5,21 @@ package com.akka.consistenthash.core;/*
 import java.util.ArrayList;
 import java.util.List;
 
-public class Node {
+public class Node<T> {
 
-    private final String address;
+    private final T address;
 
     private final String nodeSignboard;
 
-    private final List<VirtualNode> virtualNodeRecode = new ArrayList<>();
+    private final List<VirtualNode<T>> virtualNodeRecode = new ArrayList<>();
 
-    public Node(String address, String nodeSignboard) {
+    public Node(T address, String nodeSignboard) {
         this.address = address;
         this.nodeSignboard = nodeSignboard;
     }
 
 
-    public void addVirtualNodeRecode(VirtualNode virtualNode) {
+    public void addVirtualNodeRecode(VirtualNode<T> virtualNode) {
         this.virtualNodeRecode.add(virtualNode);
     }
 
@@ -28,7 +28,7 @@ public class Node {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Node node = (Node) o;
+        Node<?> node = (Node<?>) o;
 
         if (!address.equals(node.address)) return false;
         return nodeSignboard.equals(node.nodeSignboard);
@@ -41,7 +41,7 @@ public class Node {
         return result;
     }
 
-    public String getAddress() {
+    public T getAddress() {
         return address;
     }
 
@@ -49,30 +49,30 @@ public class Node {
         return nodeSignboard;
     }
 
-    public List<VirtualNode> getVirtualNodeRecode() {
+    public List<VirtualNode<T>> getVirtualNodeRecode() {
         return virtualNodeRecode;
     }
 
-    public VirtualNode createVirtualNode(int space) {
-        VirtualNode virtualNode = new VirtualNode(address, nodeSignboard, space);
+    public VirtualNode<T> createVirtualNode(int space) {
+        VirtualNode<T> virtualNode = new VirtualNode<>(address, nodeSignboard, space);
         addVirtualNodeRecode(virtualNode);
         return virtualNode;
     }
 
-    public static class VirtualNode {
-        private final String address;
+    public static class VirtualNode<T> {
+        private final T address;
 
         private final String nodeSignboard;
 
         private final int scope;
 
-        private VirtualNode(String address, String nodeSignboard, int scope) {
+        private VirtualNode(T address, String nodeSignboard, int scope) {
             this.address = address;
             this.nodeSignboard = nodeSignboard;
             this.scope = scope;
         }
 
-        public String getAddress() {
+        public T getAddress() {
             return address;
         }
 

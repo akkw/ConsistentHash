@@ -11,12 +11,12 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.List;
 
 
-public class FixedLengthHashRing implements HashRing {
-    private ConsistentHashArrayRing hashRing;
+public class FixedLengthHashRing<T> implements HashRing {
+    private ConsistentHashArrayRing<T> hashRing;
 
     private int step;
 
-    private List<Node> nodes;
+    private List<Node<T>> nodes;
 
     private int virtualNodeTotalSize;
 
@@ -25,22 +25,22 @@ public class FixedLengthHashRing implements HashRing {
     private FixedLengthHashRing() {
     }
 
-    public FixedLengthHashRing(List<Node> nodes, int virtualNodeTotalSize, HashFunction hashFunction) {
+    public FixedLengthHashRing(List<Node<T>> nodes, int virtualNodeTotalSize, HashFunction hashFunction) {
         this.nodes = nodes;
         this.virtualNodeTotalSize = virtualNodeTotalSize;
         this.hashFunction = hashFunction;
     }
 
 
-    private FixedLengthHashRing create() throws NodeException {
+    private FixedLengthHashRing<T> create() throws NodeException {
         check();
 
         this.step = MAXIMUM_CAPACITY / virtualNodeTotalSize;
         this.hashRing = new ConsistentHashArrayRing(step);
         for (int i = 0; i < virtualNodeTotalSize; i++) {
-            final Node node = nodes.get(i % nodes.size());
+            final Node<T> node = nodes.get(i % nodes.size());
             final int location = i == virtualNodeTotalSize - 1 ? MAXIMUM_CAPACITY : step * (i + 1);
-            final Node.VirtualNode virtualNode = node.createVirtualNode(location);
+            final Node.VirtualNode<T> virtualNode = node.createVirtualNode(location);
             node.addVirtualNodeRecode(virtualNode);
             hashRing.add(virtualNode);
         }
@@ -59,13 +59,13 @@ public class FixedLengthHashRing implements HashRing {
         if (virtualNodeTotalSize < nodes.size()) {
             throw new NodeException("virtualNodeSize: " + virtualNodeTotalSize + " node size: " + nodes);
         }
-        for (Node node : nodes) {
+        for (Node<T> node : nodes) {
             check(node);
         }
     }
 
-    private void check(Node node) throws NodeException {
-        if (StringUtils.isBlank(node.getAddress())) {
+    private void check(Node<T> node) throws NodeException {
+        if (node.getAddress() == null) {
             throw new NodeException("node address is null exist");
         }
         if (StringUtils.isBlank(node.getNodeSignboard())) {
@@ -74,34 +74,34 @@ public class FixedLengthHashRing implements HashRing {
     }
 
     @Override
-    public Node.VirtualNode get(String key) {
+    public Node.VirtualNode<T> get(String key) {
         return hashRing.get(hashFunction.hash(key));
     }
 
 
-    public static class Builder {
-        private List<Node> nodes;
+    public static class Builder<T> {
+        private List<Node<T>> nodes;
 
         private HashFunction hashFunction;
         private int virtualNodeSize;
 
-        public Builder setNodes(List<Node> nodes) {
+        public Builder<T> setNodes(List<Node<T>> nodes) {
             this.nodes = nodes;
             return this;
         }
 
-        public Builder hashFunction(HashFunction hashFunction) {
+        public Builder<T> hashFunction(HashFunction hashFunction) {
             this.hashFunction = hashFunction;
             return this;
         }
 
-        public Builder virtualNodeSize(int virtualNodeSize) {
+        public Builder<T> virtualNodeSize(int virtualNodeSize) {
             this.virtualNodeSize = virtualNodeSize;
             return this;
         }
 
-        public FixedLengthHashRing create() throws NodeException {
-            return new FixedLengthHashRing(nodes, virtualNodeSize, hashFunction).create();
+        public FixedLengthHashRing<T> create() throws NodeException {
+            return new FixedLengthHashRing<>(nodes, virtualNodeSize, hashFunction).create();
         }
 
 

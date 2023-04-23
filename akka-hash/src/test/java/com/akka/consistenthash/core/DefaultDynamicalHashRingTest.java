@@ -14,7 +14,7 @@ import java.util.List;
 import static com.akka.consistenthash.hash.HashRing.MAXIMUM_CAPACITY;
 
 public class DefaultDynamicalHashRingTest extends HashRingTest {
-    private DefaultDynamicalHashRing defaultDynamicalHashRing;
+    private DefaultDynamicalHashRing<String> defaultDynamicalHashRing;
     private HashFunction hashFunction = new FixedDefaultHashFunction();
 
     private int virtualNodeSize = 20000;
@@ -22,7 +22,7 @@ public class DefaultDynamicalHashRingTest extends HashRingTest {
     public void before()  {
         super.before();
         try {
-            defaultDynamicalHashRing = new DefaultDynamicalHashRing.Builder()
+            defaultDynamicalHashRing = new DefaultDynamicalHashRing<String>(). new Builder()
                     .hashFunction(hashFunction)
                     .virtualNodeSize(virtualNodeSize)
                     .nodes(nodes)

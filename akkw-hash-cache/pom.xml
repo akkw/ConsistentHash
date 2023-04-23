@@ -20,6 +20,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.akka</groupId>
             <artifactId>akka-tools</artifactId>
         </dependency>
@@ -27,6 +31,10 @@
             <groupId>com.akka</groupId>
             <artifactId>akka-hash</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -19,9 +19,15 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <revision>1.0.0</revision>
         <javassist.version>3.20.0-GA</javassist.version>
+        <jedis.version>3.9.0</jedis.version>
     </properties>
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>redis.clients</groupId>
+                <artifactId>jedis</artifactId>
+                <version>${jedis.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.akka</groupId>
                 <artifactId>akka-tools</artifactId>
